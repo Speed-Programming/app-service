@@ -5,13 +5,17 @@
 package aplikasipenomoran;
 
 import com.formdev.flatlaf.FlatDarkLaf;
+import com.itextpdf.text.DocumentException;
 import java.awt.HeadlessException;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
@@ -20,6 +24,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 import javax.swing.UnsupportedLookAndFeelException;
+import module.Cetak;
 
 /**
  *
@@ -239,6 +244,49 @@ public class Home extends javax.swing.JFrame {
         }
     }
     
+    public void getTableNginap(){
+        
+        JTable nginap = new JTable();
+        // Create New Table
+        DefaultTableModel model = new DefaultTableModel();
+        model.addColumn("ID SERVICE");
+        model.addColumn("NOMOR POLISI");
+        model.addColumn("TYPE MOBIL");
+        model.addColumn("WARNA");
+        model.addColumn("CHECK IN");
+        model.addColumn("CHECK OUT");
+        model.addColumn("CHECK KETERANGAN");
+        
+        //menampilkan data database kedalam tabel
+        try {
+            String sql = "SELECT SE.id_service, SH.no_pol, SH.type_mobil, SE.warna, SH.check_in, SH.check_out, SH.keterangan FROM `tb_service` AS SE JOIN `tb_showroom` AS SH ON SE.id_showroom=SH.id_showroom;";
+            java.sql.Connection conn= Connect.configDB();
+            java.sql.Statement stm=conn.createStatement();
+            java.sql.ResultSet res=stm.executeQuery(sql);
+            while(res.next()){
+                model.addRow(new Object[]{ 
+                    res.getString(1),
+                    res.getString(2),
+                    res.getString(3),
+                    res.getString(4),
+                    res.getString(5),
+                    res.getString(6),
+                    res.getString(7),
+                });
+            }
+            nginap.setModel(model);
+            DefaultTabel(nginap, 7);
+            
+            try {
+                new Cetak().generatePDF(nginap, "DATA MENGINAP");
+            } catch (IOException | DocumentException ex) {
+                Logger.getLogger(Home.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(rootPane, "TABEL SERVICE ERROR : "+e);
+        }
+    }
+    
     public void getDataShowRoom(){
         String id_showroom = sv_id_showroom.getText();
         try {
@@ -431,6 +479,7 @@ public class Home extends javax.swing.JFrame {
         usr_btn_edit = new javax.swing.JButton();
         usr_btn_refresh = new javax.swing.JButton();
         usr_btn_add2 = new javax.swing.JButton();
+        usr_laporan = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
         jScrollPane4 = new javax.swing.JScrollPane();
         sh_tbl_showroom = new javax.swing.JTable();
@@ -504,6 +553,7 @@ public class Home extends javax.swing.JFrame {
         cariDate1 = new javax.swing.JButton();
         jLabel60 = new javax.swing.JLabel();
         search_showroom = new javax.swing.JTextField();
+        sv_btn_nginap = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
@@ -864,6 +914,20 @@ public class Home extends javax.swing.JFrame {
             }
         });
 
+        usr_laporan.setBackground(new java.awt.Color(0, 0, 51));
+        usr_laporan.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        usr_laporan.setText("CETAK LAPORAN");
+        usr_laporan.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                usr_laporanMouseClicked(evt);
+            }
+        });
+        usr_laporan.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                usr_laporanActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -900,7 +964,9 @@ public class Home extends javax.swing.JFrame {
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(usr_total_user, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(usr_total_user, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(usr_laporan, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 706, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -912,7 +978,8 @@ public class Home extends javax.swing.JFrame {
                     .addComponent(usr_id_user, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel19)
                     .addComponent(jLabel21)
-                    .addComponent(usr_total_user))
+                    .addComponent(usr_total_user)
+                    .addComponent(usr_laporan))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel4Layout.createSequentialGroup()
@@ -940,7 +1007,7 @@ public class Home extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(usr_btn_logout))
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(86, Short.MAX_VALUE))
+                .addContainerGap(85, Short.MAX_VALUE))
         );
 
         Jtabbed_utama.addTab("USER", jPanel4);
@@ -1184,6 +1251,11 @@ public class Home extends javax.swing.JFrame {
         sh_btn_cetak.setBackground(new java.awt.Color(0, 0, 51));
         sh_btn_cetak.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         sh_btn_cetak.setText("CETAK LAPORAN");
+        sh_btn_cetak.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sh_btn_cetakActionPerformed(evt);
+            }
+        });
 
         jLabel22.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel22.setText("TOTAL SHOWROOM");
@@ -1533,6 +1605,15 @@ public class Home extends javax.swing.JFrame {
 
         search_showroom.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
 
+        sv_btn_nginap.setBackground(new java.awt.Color(0, 0, 51));
+        sv_btn_nginap.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        sv_btn_nginap.setText("CETAK MENGINAP");
+        sv_btn_nginap.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sv_btn_nginapActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
         jPanel9.setLayout(jPanel9Layout);
         jPanel9Layout.setHorizontalGroup(
@@ -1554,7 +1635,9 @@ public class Home extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(sv_total_service, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(sv_btn_cetak, javax.swing.GroupLayout.PREFERRED_SIZE, 212, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(sv_btn_nginap)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(sv_btn_cetak))
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel9Layout.createSequentialGroup()
                         .addComponent(jLabel60, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -1589,7 +1672,8 @@ public class Home extends javax.swing.JFrame {
                     .addComponent(jLabel35)
                     .addComponent(sv_btn_logout)
                     .addComponent(sv_total_service)
-                    .addComponent(sv_btn_cetak))
+                    .addComponent(sv_btn_cetak)
+                    .addComponent(sv_btn_nginap))
                 .addGap(16, 16, 16))
         );
 
@@ -2007,6 +2091,12 @@ public class Home extends javax.swing.JFrame {
 
     private void sv_btn_cetakActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sv_btn_cetakActionPerformed
         // TODO add your handling code here:
+        try {
+            // TODO add your handling code here:
+            new Cetak().generatePDF(sv_tbl_service, "DATA SERVICES");
+        } catch (IOException | DocumentException ex) {
+            Logger.getLogger(Home.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_sv_btn_cetakActionPerformed
 
     private void sv_no_mesinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sv_no_mesinActionPerformed
@@ -2165,6 +2255,34 @@ public class Home extends javax.swing.JFrame {
         getAllTable();
     }//GEN-LAST:event_sv_btn_refreshMouseClicked
 
+    private void usr_laporanMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_usr_laporanMouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_usr_laporanMouseClicked
+
+    private void usr_laporanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_usr_laporanActionPerformed
+        try {
+            // TODO add your handling code here:
+            new Cetak().generatePDF(usr_tbl_user, "DATA USERS");
+        } catch (IOException | DocumentException ex) {
+            Logger.getLogger(Home.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_usr_laporanActionPerformed
+
+    private void sh_btn_cetakActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sh_btn_cetakActionPerformed
+        // TODO add your handling code here:
+        try {
+            // TODO add your handling code here:
+            new Cetak().generatePDF(sh_tbl_showroom, "DATA SHOWROOMS");
+        } catch (IOException | DocumentException ex) {
+            Logger.getLogger(Home.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_sh_btn_cetakActionPerformed
+
+    private void sv_btn_nginapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sv_btn_nginapActionPerformed
+        // TODO add your handling code here:
+        getTableNginap();
+    }//GEN-LAST:event_sv_btn_nginapActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -2266,6 +2384,7 @@ public class Home extends javax.swing.JFrame {
     private javax.swing.JButton sv_btn_cetak;
     private javax.swing.JButton sv_btn_edit;
     private javax.swing.JButton sv_btn_logout;
+    private javax.swing.JButton sv_btn_nginap;
     private javax.swing.JButton sv_btn_refresh;
     private javax.swing.JTextField sv_id_service;
     private javax.swing.JTextField sv_id_showroom;
@@ -2292,6 +2411,7 @@ public class Home extends javax.swing.JFrame {
     private javax.swing.JButton usr_btn_logout;
     private javax.swing.JButton usr_btn_refresh;
     private javax.swing.JTextField usr_id_user;
+    private javax.swing.JButton usr_laporan;
     private javax.swing.JPasswordField usr_password;
     private javax.swing.JTable usr_tbl_user;
     private javax.swing.JLabel usr_total_showroom;
