@@ -259,7 +259,7 @@ public class Home extends javax.swing.JFrame {
         
         //menampilkan data database kedalam tabel
         try {
-            String sql = "SELECT SE.id_service, SH.no_pol, SH.type_mobil, SE.warna, SH.check_in, SH.check_out, SH.keterangan FROM `tb_service` AS SE JOIN `tb_showroom` AS SH ON SE.id_showroom=SH.id_showroom;";
+            String sql = "SELECT SE.id_service, SH.no_pol, SH.type_mobil, SE.warna, SH.check_in, SH.check_out, SH.keterangan FROM `tb_service` AS SE JOIN `tb_showroom` AS SH ON SE.id_showroom=SH.id_showroom WHERE SE.status_service='PROSES';";
             java.sql.Connection conn= Connect.configDB();
             java.sql.Statement stm=conn.createStatement();
             java.sql.ResultSet res=stm.executeQuery(sql);
